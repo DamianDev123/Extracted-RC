@@ -446,60 +446,6 @@ public class FtcRobotControllerActivity extends Activity
     protected void onResume() {
         super.onResume();
         RobotLog.vv(TAG, "onResume()");
-        // Delay slightly to allow hardware to initialize before starting OpMode
-        new Thread(() -> {
-            try {
-                Thread.sleep(3000);
-
-                OpModeManagerImpl opModeManager = OpModeManagerImpl.getOpModeManager();
-                if (opModeManager == null) {
-                    RobotLog.ee("AutoStart", "OpModeManagerImpl instance is null");
-                    return;
-                }
-
-                String opModeName = "MyAutonomousOpMode";
-
-                // Use reflection to access the registeredOpModes map
-                java.lang.reflect.Field field = OpModeManagerImpl.class.getDeclaredField("registeredOpModes");
-                field.setAccessible(true);
-                @SuppressWarnings("unchecked")
-                Map<String, Object> registeredOpModes = (Map<String, Object>) field.get(opModeManager);
-
-                if (registeredOpModes == null) {
-                    RobotLog.ee("AutoStart", "registeredOpModes map is null");
-                    return;
-                }
-
-                Object targetOpModeMeta = null;
-                for (Object meta : registeredOpModes.values()) {
-                    // OpModeMeta class has a 'name' field
-                    java.lang.reflect.Field nameField = meta.getClass().getDeclaredField("name");
-                    nameField.setAccessible(true);
-                    String name = (String) nameField.get(meta);
-
-                    if (opModeName.equals(name)) {
-                        targetOpModeMeta = meta;
-                        break;
-                    }
-                }
-
-                if (targetOpModeMeta == null) {
-                    RobotLog.ee("AutoStart", "OpModeMeta for " + opModeName + " not found");
-                    return;
-                }
-
-                // Call setActiveOpMode(OpModeMeta) and then startActiveOpMode()
-                java.lang.reflect.Method setActiveMethod = OpModeManagerImpl.class.getDeclaredMethod("setActiveOpMode", targetOpModeMeta.getClass());
-                setActiveMethod.setAccessible(true);
-                setActiveMethod.invoke(opModeManager, targetOpModeMeta);
-
-                opModeManager.startActiveOpMode();
-
-            } catch (Exception e) {
-                RobotLog.ee("AutoStart", "Exception starting OpMode: " + e.toString());
-                e.printStackTrace();
-            }
-        }).start();
         // In case the user just got back from fixing their clock, refresh ClockWarningSource
         ClockWarningSource.getInstance().onPossibleRcClockUpdate();
     }
