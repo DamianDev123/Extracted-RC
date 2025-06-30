@@ -1,3 +1,6 @@
+Copied from OpenFTC extracted RC
+
+
 This is a home for the SDK after all the AARs have been extracted. It is the base for the OpenRC refresh.
 
 Notes:
